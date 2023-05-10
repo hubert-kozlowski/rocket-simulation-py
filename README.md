@@ -1,5 +1,3 @@
-![2023-05-10 20_04_19-Figure 1](https://github.com/bIinno/rocket/assets/56482897/7e9b17d3-3f34-48a7-b170-74f63a436b46)
-
 
 # Rocket Simulation
 
@@ -86,9 +84,51 @@ def custom_thrust(time):
         return 0.0
 ```
 
+
+#### Sinusoidal Thrust Function
+```py
+def sinusoidal_thrust(time):
+    amplitude = 5000.0
+    frequency = 0.5  # Adjust the frequency to control the oscillation
+    return amplitude * math.sin(2 * math.pi * frequency * time)
+```
+This thrust function generates a sinusoidal thrust variation over time. Users can adjust the amplitude and frequency parameters to create different oscillation patterns.
+
+#### Exponential Thrust Function
+```py
+def exponential_thrust(time):
+    initial_thrust = 5000.0
+    decay_rate = 0.2  # Adjust the decay rate to control the exponential decay
+    return initial_thrust * math.exp(-decay_rate * time)
+```
+This thrust function produces an exponential decay in thrust over time. Users can adjust the initial thrust and decay rate parameters to control the rate of decay.
+
+#### Step Function Thrust
+```py
+def step_thrust(time):
+    return 5000.0 if time < 5.0 else 10000.0
+```
+This thrust function applies a step change in thrust at a specific time. In this example, the thrust is 5000.0 until time reaches 5.0 seconds, after which it increases to 10000.0. Users can modify the time threshold and thrust values to create different step variations.
+
 ### Custom Drag Function
 The custom drag function takes the __'velocity'__ as input and returns the corresponding drag force at that velocity. Here's an example of a custom drag function:
 ```py
 def custom_drag(velocity):
     return 0.5 * velocity  # Assuming drag coefficient = 0.5
 ```
+
+#### Quadratic Drag Function
+```py
+def quadratic_drag(velocity):
+    drag_coefficient = 0.5
+    return drag_coefficient * velocity**2
+```
+This drag function introduces a quadratic drag force that increases with the square of the velocity. Users can adjust the drag coefficient parameter to change the strength of the drag effect.
+
+#### Inverse Velocity Drag Function
+```py
+def inverse_velocity_drag(velocity):
+    drag_coefficient = 0.5
+    return drag_coefficient / velocity
+```
+This drag function creates an inverse relationship between drag force and velocity. As the velocity increases, the drag force decreases. Users can adjust the drag coefficient parameter to control the strength of the effect.
