@@ -1,3 +1,6 @@
+![2023-05-10 20_04_19-Figure 1](https://github.com/bIinno/rocket/assets/56482897/7e9b17d3-3f34-48a7-b170-74f63a436b46)
+
+
 # Rocket Simulation
 
 This program simulates the flight of a rocket based on the provided parameters, such as mass, thrust function, and drag function. It calculates the rocket's altitude, velocity, acceleration, and temperature over time and plots the telemetry data.
