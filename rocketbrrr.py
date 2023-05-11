@@ -1,5 +1,6 @@
 import math
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 class RocketSimulation:
@@ -16,6 +17,7 @@ class RocketSimulation:
         self.max_altitude = 0.0
         self.max_temperature = 0.0
         self.earth_radius = 6371000  # Radius of the Earth in meters
+        self.angular_velocity = 2 * math.pi / (24 * 60 * 60)  # Angular velocity of the Earth's rotation
 
         # Variables for plotting
         self.time_data = []
@@ -46,11 +48,12 @@ class RocketSimulation:
         if temperature > self.max_temperature:
             self.max_temperature = temperature
 
-        # Update latitude and longitude based on curved path
-        angular_velocity = self.velocity / self.earth_radius
+        # Update latitude and longitude based on curved path and Earth's rotation
+        angular_velocity = self.velocity / (self.earth_radius + self.altitude)
         delta_longitude = math.degrees(angular_velocity * time_step)
+        delta_latitude = math.degrees(self.angular_velocity * time_step)
         self.longitude.append(self.longitude[-1] + delta_longitude)
-        self.latitude.append(0.0)  # Dummy value for latitude
+        self.latitude.append(self.latitude[-1] + delta_latitude)
 
         # Append telemetry data for plotting
         self.time_data.append(self.time)
@@ -75,7 +78,7 @@ class RocketSimulation:
         mach_number = velocity / speed_of_sound
         gamma = 1.4  # Specific heat ratio for air
         temperature = 288.0  # Temperature at sea level in Kelvin
-        return temperature * (1 + (gamma - 1) * mach_number ** 2 / 2)
+        return temperature *         (1 + (gamma - 1) * mach_number ** 2 / 2)
 
 # Example thrust and drag functions
 def varying_thrust(time):
@@ -84,7 +87,7 @@ def varying_thrust(time):
     elif time < 10.0:
         return 25000.0
     else:
-        return 0.0
+        return 0.0   
 
 def linear_drag(velocity):
     return 0.5 * velocity  # Assuming drag coefficient = 0.5
@@ -110,62 +113,63 @@ else:
 # Example usage
 simulation = RocketSimulation(mass, thrust_func, drag_func)
 
-
 time_step = 0.1
 total_time = 15.0
 
 while simulation.time < total_time:
     simulation.update(time_step)
 
-# Plotting the telemetry data
-fig, axs = plt.subplots(3, 2, figsize=(12, 12))
-fig.suptitle('Rocket Simulation Telemetry')
+# Create subplots for Altitude, Velocity, Acceleration, and Temperature
+fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
-# Altitude
-axs[0, 0].plot(simulation.time_data, simulation.altitude_data, color='red')
-axs[0, 0].set_xlabel('Time (s)')
-axs[0, 0].set_ylabel('Altitude (m)')
-axs[0, 0].set_title('Altitude vs. Time')
+# Altitude vs. Time
+axes[0, 0].plot(simulation.time_data, simulation.altitude_data, color='blue')
+axes[0, 0].set_xlabel('Time (s)')
+axes[0, 0].set_ylabel('Altitude (m)')
+axes[0, 0].set_title('Altitude vs. Time')
+axes[0, 0].grid(True)
 
-# Velocity
-axs[0, 1].plot(simulation.time_data, simulation.velocity_data, color='green')
-axs[0, 1].set_xlabel('Time (s)')
-axs[0, 1].set_ylabel('Velocity (m/s)')
-axs[0, 1].set_title('Velocity vs. Time')
+# Velocity vs. Time
+axes[0, 1].plot(simulation.time_data, simulation.velocity_data, color='orange')
+axes[0, 1].set_xlabel('Time (s)')
+axes[0, 1].set_ylabel('Velocity (m/s)')
+axes[0, 1].set_title('Velocity vs. Time')
+axes[0, 1].grid(True)
 
-# Acceleration
-axs[1, 0].plot(simulation.time_data, simulation.acceleration_data, color='blue')
-axs[1, 0].set_xlabel('Time (s)')
-axs[1, 0].set_ylabel('Acceleration (m/s^2)')
-axs[1, 0].set_title('Acceleration vs. Time')
+# Acceleration vs. Time
+axes[1, 0].plot(simulation.time_data, simulation.acceleration_data, color='green')
+axes[1, 0].set_xlabel('Time (s)')
+axes[1, 0].set_ylabel('Acceleration (m/s^2)')
+axes[1, 0].set_title('Acceleration vs. Time')
+axes[1, 0].grid(True)
 
-# Temperature
-axs[1, 1].plot(simulation.time_data, simulation.temperature_data, color='orange')
-axs[1, 1].set_xlabel('Time (s)')
-axs[1, 1].set_ylabel('Temperature (K)')
-axs[1, 1].set_title('Temperature vs. Time')
+# Temperature vs. Time
+axes[1, 1].plot(simulation.time_data, simulation.temperature_data, color='red')
+axes[1, 1].set_xlabel('Time (s)')
+axes[1, 1].set_ylabel('Temperature (K)')
+axes[1, 1].set_title('Temperature vs. Time')
+axes[1, 1].grid(True)
 
-# Rocket Path (Longitude vs. Latitude)
-axs[2, 0].plot(simulation.longitude, simulation.latitude, color='purple')
-axs[2, 0].set_xlabel('Longitude (degrees)')
-axs[2, 0].set_ylabel('Latitude (degrees)')
-axs[2, 0].set_title('Rocket Path')
+# Adjust spacing between subplots
+plt.tight_layout()
 
-# Additional Telemetry: Altitude vs. Temperature (Dotted line comparison)
-axs[2, 1].plot(simulation.altitude_data, simulation.temperature_data, 'r:', label='Altitude vs. Temperature')
-axs[2, 1].set_xlabel('Altitude (m)')
-axs[2, 1].set_ylabel('Temperature (K)')
-axs[2, 1].set_title('Altitude vs. Temperature')
-axs[2, 1].legend()
-
-# Text statistics
-peak_apogee = f"Peak Apogee: {simulation.max_altitude:.2f} meters"
-max_temperature = f"Max Temperature: {simulation.max_temperature:.2f} K"
-axs[2, 1].text(0.5, 0.9, peak_apogee, fontsize=12, ha='center')
-axs[2, 1].text(0.5, 0.8, max_temperature, fontsize=12, ha='center')
-
-# Adjusting subplot spacing
-fig.subplots_adjust(hspace=0.5, wspace=0.3, top=0.9, bottom=0.1, left=0.1, right=0.9)
-
-# Show the plot
+# Rocket Path (3D)
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(simulation.longitude[:-1], simulation.latitude[:-1], simulation.altitude_data, color='purple')
+ax.set_xlabel('Longitude (degrees)')
+ax.set_ylabel('Latitude (degrees)')
+ax.set_zlabel('Altitude (m)')
+ax.set_title('Rocket Path')
+ax.grid(True)
 plt.show()
+
+# Altitude vs. Temperature (Comparison)
+plt.figure(figsize=(10, 8))
+plt.plot(simulation.altitude_data, simulation.temperature_data, '--', color='brown')
+plt.xlabel('Altitude (m)')
+plt.ylabel('Temperature (K)')
+plt.title('Altitude vs. Temperature (Comparison)')
+plt.grid(True)
+plt.show()
+
