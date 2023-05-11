@@ -1,7 +1,6 @@
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 
 class RocketSimulation:
     def __init__(self, mass, thrust_func, drag_func):
@@ -78,7 +77,7 @@ class RocketSimulation:
         mach_number = velocity / speed_of_sound
         gamma = 1.4  # Specific heat ratio for air
         temperature = 288.0  # Temperature at sea level in Kelvin
-        return temperature *         (1 + (gamma - 1) * mach_number ** 2 / 2)
+        return temperature * (1 + (gamma - 1) * mach_number ** 2 / 2)
 
 # Example thrust and drag functions
 def varying_thrust(time):
@@ -88,7 +87,7 @@ def varying_thrust(time):
         return 25000.0
     else:
         return 0.0   
-
+    
 def linear_drag(velocity):
     return 0.5 * velocity  # Assuming drag coefficient = 0.5
 
@@ -160,16 +159,13 @@ ax.plot(simulation.longitude[:-1], simulation.latitude[:-1], simulation.altitude
 ax.set_xlabel('Longitude (degrees)')
 ax.set_ylabel('Latitude (degrees)')
 ax.set_zlabel('Altitude (m)')
+
 ax.set_title('Rocket Path')
 ax.grid(True)
-plt.show()
 
-# Altitude vs. Temperature (Comparison)
-plt.figure(figsize=(10, 8))
-plt.plot(simulation.altitude_data, simulation.temperature_data, '--', color='brown')
-plt.xlabel('Altitude (m)')
-plt.ylabel('Temperature (K)')
-plt.title('Altitude vs. Temperature (Comparison)')
-plt.grid(True)
-plt.show()
+# Show maximum altitude and temperature
+print("Maximum Altitude: {:.2f} meters".format(simulation.max_altitude))
+print("Maximum Temperature: {:.2f} K".format(simulation.max_temperature))
 
+# Show all the plots
+plt.show()
