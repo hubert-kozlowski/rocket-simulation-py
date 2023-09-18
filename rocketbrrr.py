@@ -32,7 +32,7 @@ class RocketSimulation:
         thrust_force = self.thrust_func(self.time)
         drag_force = self.drag_func(self.velocity)
 
-        net_force = thrust_force - drag_force - gravity_force
+        net_force = thrust_force - drag_force - self.calculate_gravity_force()
         if self.altitude > 100000:  # Check if altitude is above 100 km
             if net_force <= 0:  # Rocket is not achieving sufficient thrust to overcome gravity
                 self.acceleration = -gravity_force / self.mass  # Apply gravitational acceleration
@@ -105,20 +105,38 @@ def linear_drag(velocity):
     return 0.5 * velocity  # Assuming drag coefficient = 0.5
 
 # Prompt user for rocket parameters
-mass = float(input("Enter the rocket's mass (in kg): "))
+while True:
+    try:
+        mass = float(input("Enter the rocket's mass (in kg): "))
+        if mass <= 0:
+            raise ValueError("Mass must be greater than 0.")
+        break
+    except ValueError as err:
+        print(err)
+
 
 # Prompt user for custom thrust function
 custom_thrust_input = input("Custom thrust? (yes/no): ")
 if custom_thrust_input.lower() == 'yes':
-    thrust_func = eval(input("Enter the custom thrust function: "))
+    while True:
+        try:
+            thrust_func = eval(input("Enter the custom thrust function: "))
+            break
+        except:
+            print("Invalid thrust function. Please try again.")
 else:
     thrust_func = varying_thrust  # Default thrust function
 
 # Prompt user for custom drag function
 custom_drag_input = input("Custom drag? (yes/no): ")
 if custom_drag_input.lower() == 'yes':
-    drag_func_input = input("Enter the custom drag function (in terms of 'velocity'): ")
-    drag_func = eval(f"lambda velocity: {drag_func_input}")
+    while True:
+        drag_func_input = input("Enter the custom drag function (in terms of 'velocity'): ")
+        try:
+            drag_func = eval(f"lambda velocity: {drag_func_input}")
+            break
+        except:
+            print("Invalid input. Please try again.")
 else:
     drag_func = linear_drag  # Default drag function
 
