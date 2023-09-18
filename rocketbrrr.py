@@ -4,6 +4,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class RocketSimulation:
     def __init__(self, mass, thrust_func, drag_func):
+        """Creates a new RocketSimulation object with the given
+        mass, thrust function, and drag function."""
         self.mass = mass
         self.thrust_func = thrust_func
         self.drag_func = drag_func
@@ -31,7 +33,13 @@ class RocketSimulation:
         drag_force = self.drag_func(self.velocity)
 
         net_force = thrust_force - drag_force - gravity_force
-        self.acceleration = net_force / self.mass
+        if self.altitude > 100000:  # Check if altitude is above 100 km
+            if net_force <= 0:  # Rocket is not achieving sufficient thrust to overcome gravity
+                self.acceleration = -gravity_force / self.mass  # Apply gravitational acceleration
+            else:
+                self.acceleration = 0.0  # Rocket is in weightless orbit, set acceleration to zero
+        else:
+            self.acceleration = net_force / self.mass  # Rocket is below 100 km, consider all forces
         self.velocity += self.acceleration * time_step
         self.altitude += self.velocity * time_step
         self.time += time_step
@@ -42,6 +50,7 @@ class RocketSimulation:
 
         if self.altitude > self.max_altitude:
             self.max_altitude = self.altitude
+
 
         temperature = self.calculate_temperature(self.velocity)
         if temperature > self.max_temperature:
@@ -70,7 +79,11 @@ class RocketSimulation:
     def calculate_gravity_force(self):
         gravitational_constant = 6.67430e-11  # Gravitational constant in m^3 / (kg * s^2)
         earth_mass = 5.9722e24  # Mass of the Earth in kg
-        return gravitational_constant * self.mass * earth_mass / (self.earth_radius + self.altitude)**2
+        if self.altitude >= 100000 and self.velocity >= 11186:  # Check if altitude is above 100 km
+            return 0.0  # Rocket is in weightless orbit, no gravity
+        else:
+            return gravitational_constant * self.mass * earth_mass / (self.earth_radius + self.altitude)**2
+        
 
     def calculate_temperature(self, velocity):
         speed_of_sound = 343.0  # Speed of sound in m/s at sea level
@@ -86,7 +99,7 @@ def varying_thrust(time):
     elif time < 10.0:
         return 25000.0
     else:
-        return 0.0   
+        return 0
     
 def linear_drag(velocity):
     return 0.5 * velocity  # Assuming drag coefficient = 0.5
@@ -113,7 +126,7 @@ else:
 simulation = RocketSimulation(mass, thrust_func, drag_func)
 
 time_step = 0.1
-total_time = 15.0
+total_time = 120
 
 while simulation.time < total_time:
     simulation.update(time_step)
@@ -121,7 +134,8 @@ while simulation.time < total_time:
 # Create subplots for Altitude, Velocity, Acceleration, and Temperature
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
-# Altitude vs. Time
+# Altitude vs. Time 
+# Dotted line at 0 on y-axis
 axes[0, 0].plot(simulation.time_data, simulation.altitude_data, color='blue')
 axes[0, 0].set_xlabel('Time (s)')
 axes[0, 0].set_ylabel('Altitude (m)')
@@ -149,6 +163,9 @@ axes[1, 1].set_ylabel('Temperature (K)')
 axes[1, 1].set_title('Temperature vs. Time')
 axes[1, 1].grid(True)
 
+
+
+
 # Adjust spacing between subplots
 plt.tight_layout()
 
@@ -169,3 +186,5 @@ print("Maximum Temperature: {:.2f} K".format(simulation.max_temperature))
 
 # Show all the plots
 plt.show()
+
+
