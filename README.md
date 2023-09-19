@@ -10,7 +10,7 @@ This program simulates the flight of a rocket based on the provided parameters, 
    ```bash
    git clone https://github.com/your-username/rocket-simulation.git
    ```
-   
+
 2. Change into the project directory:
 
    ```bash
@@ -30,18 +30,18 @@ This program simulates the flight of a rocket based on the provided parameters, 
    ```bash
    python rocket_simulation.py
    ```
-   
+
 2. Enter the rocket's mass when prompted:
 
    ```bash
    Enter the rocket's mass (in kg): 100.0
-   ``` 
-   
+   ```
+
 3. Choose whether to use custom thrust function:
 
-   ```bash
-   Custom thrust? (yes/no): yes
-   ```    
+ ```bash
+Custom thrust? (yes/no): yes
+```
  If you choose "yes," enter the custom thrust function when prompted. Otherwise, a default thrust function will be used.
 
 Example of a custom thrust function:
