@@ -1,6 +1,9 @@
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import logging
+
+logging.basicConfig(filename='rocket_simulation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class RocketSimulation:
     def __init__(self, mass, thrust_func, drag_func):
@@ -28,47 +31,50 @@ class RocketSimulation:
         self.temperature_data = []
 
     def update(self, time_step):
-        gravity_force = self.calculate_gravity_force()
-        thrust_force = self.thrust_func(self.time)
-        drag_force = self.drag_func(self.velocity)
+        try:
+            gravity_force = self.calculate_gravity_force()
+            thrust_force = self.thrust_func(self.time)
+            drag_force = self.drag_func(self.velocity)
 
-        net_force = thrust_force - drag_force - self.calculate_gravity_force()
-        if self.altitude > 100000:  # Check if altitude is above 100 km
-            if net_force <= 0:  # Rocket is not achieving sufficient thrust to overcome gravity
-                self.acceleration = -gravity_force / self.mass  # Apply gravitational acceleration
+            net_force = thrust_force - drag_force - self.calculate_gravity_force()
+            if self.altitude > 100000:  # Check if altitude is above 100 km
+                if net_force <= 0:  # Rocket is not achieving sufficient thrust to overcome gravity
+                    self.acceleration = -gravity_force / self.mass  # Apply gravitational acceleration
+                else:
+                    self.acceleration = 0.0  # Rocket is in weightless orbit, set acceleration to zero
             else:
-                self.acceleration = 0.0  # Rocket is in weightless orbit, set acceleration to zero
-        else:
-            self.acceleration = net_force / self.mass  # Rocket is below 100 km, consider all forces
-        self.velocity += self.acceleration * time_step
-        self.altitude += self.velocity * time_step
-        self.time += time_step
+                self.acceleration = net_force / self.mass  # Rocket is below 100 km, consider all forces
+            self.velocity += self.acceleration * time_step
+            self.altitude += self.velocity * time_step
+            self.time += time_step
 
-        if self.altitude < 0:
-            self.altitude = 0
-            self.velocity = 0
+            if self.altitude < 0:
+                self.altitude = 0
+                self.velocity = 0
 
-        if self.altitude > self.max_altitude:
-            self.max_altitude = self.altitude
+            if self.altitude > self.max_altitude:
+                self.max_altitude = self.altitude
 
+            temperature = self.calculate_temperature(self.velocity)
+            if temperature > self.max_temperature:
+                self.max_temperature = temperature
 
-        temperature = self.calculate_temperature(self.velocity)
-        if temperature > self.max_temperature:
-            self.max_temperature = temperature
+            # Update latitude and longitude based on curved path and Earth's rotation
+            angular_velocity = self.velocity / (self.earth_radius + self.altitude)
+            delta_longitude = math.degrees(angular_velocity * time_step)
+            delta_latitude = math.degrees(self.angular_velocity * time_step)
+            self.longitude.append(self.longitude[-1] + delta_longitude)
+            self.latitude.append(self.latitude[-1] + delta_latitude)
 
-        # Update latitude and longitude based on curved path and Earth's rotation
-        angular_velocity = self.velocity / (self.earth_radius + self.altitude)
-        delta_longitude = math.degrees(angular_velocity * time_step)
-        delta_latitude = math.degrees(self.angular_velocity * time_step)
-        self.longitude.append(self.longitude[-1] + delta_longitude)
-        self.latitude.append(self.latitude[-1] + delta_latitude)
+            # Append telemetry data for plotting
+            self.time_data.append(self.time)
+            self.altitude_data.append(self.altitude)
+            self.velocity_data.append(self.velocity)
+            self.acceleration_data.append(self.acceleration)
+            self.temperature_data.append(temperature)
 
-        # Append telemetry data for plotting
-        self.time_data.append(self.time)
-        self.altitude_data.append(self.altitude)
-        self.velocity_data.append(self.velocity)
-        self.acceleration_data.append(self.acceleration)
-        self.temperature_data.append(temperature)
+        except Exception as e:
+            logging.error(f"An error occurred in the RocketSimulation.update method: {str(e)}")
 
     def get_latitude(self):
         return self.latitude
@@ -140,14 +146,17 @@ if custom_drag_input.lower() == 'yes':
 else:
     drag_func = linear_drag  # Default drag function
 
-# Example usage
-simulation = RocketSimulation(mass, thrust_func, drag_func)
+try:
+    simulation = RocketSimulation(mass, thrust_func, drag_func)
 
-time_step = 0.1
-total_time = 120
+    time_step = 0.1
+    total_time = 120
 
-while simulation.time < total_time:
-    simulation.update(time_step)
+    while simulation.time < total_time:
+        simulation.update(time_step)
+
+except Exception as e:
+    logging.error(f"An error occurred in the main part of the script: {str(e)}")
 
 # Create subplots for Altitude, Velocity, Acceleration, and Temperature
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
