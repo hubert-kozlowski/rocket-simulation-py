@@ -1,6 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from rich import print
 import logging
 
 logging.basicConfig(filename='rocket_simulation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -74,7 +75,7 @@ class RocketSimulation:
             self.temperature_data.append(temperature)
 
         except Exception as e:
-            logging.error(f"An error occurred in the RocketSimulation.update method: {str(e)}")
+            logging.error(f"[bold red]Error: An error occurred in the RocketSimulation.update method: {str(e)}[/]")
 
     def get_latitude(self):
         return self.latitude
@@ -99,14 +100,14 @@ class RocketSimulation:
         return temperature * (1 + (gamma - 1) * mach_number ** 2 / 2)
 
 # Example thrust and drag functions
-def varying_thrust(time):
+def default_thrust(time):
     if time < 5.0:
         return 5000.0 * time
     elif time < 10.0:
         return 25000.0
     else:
         return 0
-    
+   
 def linear_drag(velocity):
     return 0.5 * velocity  # Assuming drag coefficient = 0.5
 
@@ -115,11 +116,20 @@ while True:
     try:
         mass = float(input("Enter the rocket's mass (in kg): "))
         if mass <= 0:
-            raise ValueError("Mass must be greater than 0.")
+            raise ValueError("[bold red]Mass must be greater than 0.[/]")
         break
     except ValueError as err:
         print(err)
 
+# Prompt user for maximum simulation time
+while True:
+    try:
+        total_time = float(input("Enter the maximum simulation time (in seconds): "))
+        if total_time <= 0:
+            raise ValueError("[bold red]Maximum time must be greater than 0.[/]")
+        break
+    except ValueError as err:
+        print(err)
 
 # Prompt user for custom thrust function
 custom_thrust_input = input("Custom thrust? (yes/no): ")
@@ -129,12 +139,12 @@ if custom_thrust_input.lower() == 'yes':
             thrust_func = eval(input("Enter the custom thrust function: "))
             break
         except:
-            print("Invalid thrust function. Please try again.")
+            print("[bold red]Invalid thrust function. Please try again.[/]")
 else:
-    thrust_func = varying_thrust  # Default thrust function (v = 5000t for t < 5s, v = 25000 for t >= 5s)
+    thrust_func = default_thrust  # Default thrust function (v = 5000t for t < 5s, v = 25000 for t >= 5s)
 
     # Inform the user about the default thrust function
-    print("Using default thrust function: v = 5000t for t < 5s, v = 25000 for t >= 5s")
+    print("[bold green]Using default thrust function: v = 5000t for t < 5s, v = 25000 for t >= 5s[/]")
 
 # Prompt user for custom drag function
 custom_drag_input = input("Custom drag? (yes/no): ")
@@ -145,18 +155,18 @@ if custom_drag_input.lower() == 'yes':
             drag_func = eval(f"lambda velocity: {drag_func_input}")
             break
         except:
-            print("Invalid input. Please try again.")
+            print("[bold red]Invalid input. Please try again.[/]")
 else:
+    print("[bold green]Using default drag function: F = 0.5 * v[/]")
     drag_func = linear_drag  # Default drag function
 
 try:
     simulation = RocketSimulation(mass, thrust_func, drag_func)
 
     time_step = 0.1
-    total_time = 120
-
     reached_zero_altitude = False
     zero_altitude_time = None
+    custom_time_limit = None  # Initialize custom time limit
 
     while simulation.time < total_time:
         simulation.update(time_step)
@@ -166,15 +176,21 @@ try:
             if not reached_zero_altitude:
                 reached_zero_altitude = True
                 zero_altitude_time = simulation.time
+                # Prompt user for a custom time limit after reaching zero altitude (only if not already set)
+                if custom_time_limit is None:
+                    custom_time_limit = float(input("Enter the custom time limit (in seconds) after reaching zero altitude: "))
             else:
-                # Check if 5 seconds have passed since hitting zero altitude
-                if simulation.time - zero_altitude_time >= 5.0:
+                # Check if the custom time limit (if provided) has passed since hitting zero altitude
+                if custom_time_limit is not None and simulation.time - zero_altitude_time >= custom_time_limit:
+                    break
+                # Check if 5 seconds have passed since hitting zero altitude (default time limit)
+                elif custom_time_limit is None and simulation.time - zero_altitude_time >= 5.0:
                     break
         else:
             reached_zero_altitude = False
 
 except Exception as e:
-    logging.error(f"An error occurred in the main part of the script: {str(e)}")
+    logging.error(f"[bold red]An error occurred in the main part of the script: {str(e)}[/]")
 
 # Create subplots for Altitude, Velocity, Acceleration, and Temperature
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
@@ -221,7 +237,6 @@ ax.plot(simulation.longitude[:-1], simulation.latitude[:-1], simulation.altitude
 ax.set_xlabel('Longitude (degrees)')
 ax.set_ylabel('Latitude (degrees)')
 ax.set_zlabel('Altitude (m)')
-
 ax.set_title('Rocket Path')
 ax.grid(True)
 
