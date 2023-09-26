@@ -152,8 +152,23 @@ try:
     time_step = 0.1
     total_time = 120
 
+    reached_zero_altitude = False
+    zero_altitude_time = None
+
     while simulation.time < total_time:
         simulation.update(time_step)
+
+        # Check if the altitude has reached zero
+        if simulation.altitude <= 0:
+            if not reached_zero_altitude:
+                reached_zero_altitude = True
+                zero_altitude_time = simulation.time
+            else:
+                # Check if 5 seconds have passed since hitting zero altitude
+                if simulation.time - zero_altitude_time >= 5.0:
+                    break
+        else:
+            reached_zero_altitude = False
 
 except Exception as e:
     logging.error(f"An error occurred in the main part of the script: {str(e)}")
@@ -213,5 +228,3 @@ print("Maximum Temperature: {:.2f} K".format(simulation.max_temperature))
 
 # Show all the plots
 plt.show()
-
-
