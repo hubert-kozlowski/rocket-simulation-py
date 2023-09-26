@@ -131,7 +131,10 @@ if custom_thrust_input.lower() == 'yes':
         except:
             print("Invalid thrust function. Please try again.")
 else:
-    thrust_func = varying_thrust  # Default thrust function
+    thrust_func = varying_thrust  # Default thrust function (v = 5000t for t < 5s, v = 25000 for t >= 5s)
+
+    # Inform the user about the default thrust function
+    print("Using default thrust function: v = 5000t for t < 5s, v = 25000 for t >= 5s")
 
 # Prompt user for custom drag function
 custom_drag_input = input("Custom drag? (yes/no): ")
