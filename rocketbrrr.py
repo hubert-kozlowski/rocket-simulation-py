@@ -1,8 +1,9 @@
+import logging
 import math
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from rich import print
-import logging
 
 logging.basicConfig(filename='rocket_simulation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -223,9 +224,6 @@ axes[1, 1].set_xlabel('Time (s)')
 axes[1, 1].set_ylabel('Temperature (K)')
 axes[1, 1].set_title('Temperature vs. Time')
 axes[1, 1].grid(True)
-
-
-
 
 # Adjust spacing between subplots
 plt.tight_layout()
